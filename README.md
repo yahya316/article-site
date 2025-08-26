@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Quotes & Articles Platform
 
-## Getting Started
+A modern web application built with **Next.js** and **Tailwind CSS**, where users can:
 
-First, run the development server:
+- Explore motivational **quotes**
+- Read **articles**
+- Submit their own **quotes**
+- View content served via **API routes**
 
+Instead of a traditional database, this project uses **JSON files** stored inside the project as a lightweight data source.
+
+---
+
+## Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Data Source**: JSON files (in `/data`)
+- **APIs**: Next.js API routes for sharing data between pages and components
+
+---
+
+## Project Structure
+
+├── app/
+│ ├── admin/ # Admin-related pages
+│ │ ├── dashboard/ # Dashboard view
+│ │ ├── manage-quote/ # Manage submitted quotes
+│ │ ├── submit-quote/ # User quote submission
+│ │ └── ...
+│ ├── api/ # API routes (serving JSON data)
+│ ├── quotes/ # Quotes page
+│ ├── articles/ # Articles page
+│ ├── layout.js # Main layout
+│ └── page.js # Homepage
+│
+├── components/ # Reusable UI components
+├── data/ # JSON files acting as database
+├── public/ # Static assets
+├── styles/ # Global styles
+└── ...
+
+---
+
+## Installation & Setup
+
+Follow these steps to run the project locally:
+
+### Clone the repository
 ```bash
+git clone https://github.com/yahya316/blog-site
+cd blog-site
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Go-to: 'http://localhost:3000'
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+# Api Endpoints
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project serves JSON data through Next.js API routes. Example endpoints:
 
-## Learn More
+/api/quotes → Get all quotes
 
-To learn more about Next.js, take a look at the following resources:
+/api/articles → Get all articles
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+/api/submit-quote → Submit a new quote
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+# Developer
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Muhammad Yahya Khan
+Developed by https://github.com/yahya316
