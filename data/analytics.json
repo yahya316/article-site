@@ -1,0 +1,27 @@
+{
+  "trafficData": [
+    { "day": "Mon", "visitors": 120 },
+    { "day": "Tue", "visitors": 1200 },
+    { "day": "Wed", "visitors": 150 },
+    { "day": "Thu", "visitors": 300 },
+    { "day": "Fri", "visitors": 250 },
+    { "day": "Sat", "visitors": 400 },
+    { "day": "Sun", "visitors": 1350 }
+  ],
+  "popularPosts": [
+    { "name": "Tech", "posts": 140 },
+    { "name": "Lifestyle", "posts": 10 },
+    { "name": "Education", "posts": 94 },
+    { "name": "Travel", "posts": 65 }
+  ],
+  "trafficSources": [
+    { "name": "Google", "value": 55 },
+    { "name": "Facebook", "value": 25 },
+    { "name": "Direct", "value": 20 }
+  ],
+  "engagement": {
+    "sessionTime": "5m 24s",
+    "bounceRate": "42%",
+    "users": "65% vs 35%"
+  }
+}

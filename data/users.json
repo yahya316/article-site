@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "name": "Yahya Khan",
+    "email": "y@y.com",
+    "role": "Admin",
+    "status": "Active",
+    "password": "123",
+    "phone": "+92 300 1234567",
+    "location": "Lahore, Pakistan",
+    "bio": "App developer and learner passionate about technology.",
+    "notifications": true
+  },
+  {
+    "id": 2,
+    "name": "Ali Khan",
+    "email": "ali@example.com",
+    "role": "User",
+    "status": "Active",
+    "password": "1234",
+    "phone": "+92 312 7654321",
+    "location": "Karachi, Pakistan",
+    "bio": "Creative designer and aspiring entrepreneur.",
+    "notifications": false
+  },
+  {
+    "id": 3,
+    "name": "Sara Ahmed",
+    "email": "sara@example.com",
+    "role": "User",
+    "status": "Banned",
+    "password": "123",
+    "phone": "+92 345 5555555",
+    "location": "Islamabad, Pakistan",
+    "bio": "Student and digital artist.",
+    "notifications": false
+  },
+  {
+    "id": 4,
+    "name": "Fatima Noor",
+    "email": "fatima@example.com",
+    "role": "User",
+    "status": "Active",
+    "password": "123",
+    "phone": "+92 333 9876543",
+    "location": "Peshawar, Pakistan",
+    "bio": "A passionate reader and writer.",
+    "notifications": false
+  },
+  {
+    "id": 5,
+    "name": "Omar Rizvi",
+    "email": "omar@example.com",
+    "role": "Admin",
+    "status": "Active",
+    "password": "123",
+    "phone": "+92 346 1112233",
+    "location": "Faisalabad, Pakistan",
+    "bio": "System administrator and tech enthusiast.",
+    "notifications": true
+  },
+  {
+    "id": 6,
+    "name": "Hina Shah",
+    "email": "hina@example.com",
+    "role": "User",
+    "status": "Banned",
+    "password": "123",
+    "phone": "+92 321 4445566",
+    "location": "Multan, Pakistan",
+    "bio": "Focused on personal and professional growth.",
+    "notifications": false
+  },
+  {
+    "id": 8,
+    "name": "a",
+    "email": "a@a.com",
+    "password": "123",
+    "role": "User",
+    "status": "Active",
+    "phone": "+92 305 7778899",
+    "location": "Rawalpindi, Pakistan",
+    "bio": "Enjoying the journey of learning and discovery.",
+    "notifications": false
+  }
+]

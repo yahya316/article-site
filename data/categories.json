@@ -1,0 +1,14 @@
+{
+  "categoryButtonColors": {
+    "Motivation": "bg-blue-500 text-white",
+    "Happiness": "bg-yellow-400 text-black",
+    "Success": "bg-green-500 text-white",
+    "Mindfulness": "bg-pink-400 text-white",
+    "Faith": "bg-indigo-500 text-white",
+    "Self-Discipline": "bg-red-500 text-white",
+    "Guidance": "bg-purple-500 text-white",
+    "Trust": "bg-teal-500 text-white",
+    "Wisdom": "bg-orange-500 text-white",
+    "Contentment": "bg-lime-500 text-white"
+  }
+}
