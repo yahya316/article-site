@@ -21,7 +21,7 @@ Instead of a traditional database, this project uses **JSON files** stored insid
 ---
 
 ## Project Structure
-
+```
 ├── app/
 │ ├── admin/ # Admin-related pages
 │ │ ├── dashboard/ # Dashboard view
@@ -39,7 +39,7 @@ Instead of a traditional database, this project uses **JSON files** stored insid
 ├── public/ # Static assets
 ├── styles/ # Global styles
 └── ...
-
+```
 ---
 
 ## Installation & Setup
@@ -53,19 +53,18 @@ cd blog-site
 npm install
 npm run dev
 Go-to: 'http://localhost:3000'
+```
 
 ---
 
-# Api Endpoints
+## API Endpoints
 
 This project serves JSON data through Next.js API routes. Example endpoints:
-
+```
 /api/quotes → Get all quotes
-
 /api/articles → Get all articles
-
 /api/submit-quote → Submit a new quote
-
+```
 ---
 
 # Developer
