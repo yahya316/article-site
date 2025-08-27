@@ -1,60 +1,72 @@
-import React from "react";
 import Image from "next/image";
 
-const categoryColors = {
-  Motivation: "bg-purple-100 text-purple-800",
-  Happiness: "bg-yellow-100 text-yellow-800",
-  Success: "bg-green-100 text-green-800",
-  Mindfulness: "bg-pink-100 text-pink-800",
-  Faith: "bg-blue-100 text-blue-800",
-  "Self-Discipline": "bg-red-100 text-red-800",
-  Guidance: "bg-indigo-100 text-indigo-800",
-  Trust: "bg-teal-100 text-teal-800",
-  Wisdom: "bg-orange-100 text-orange-800",
-  Contentment: "bg-lime-100 text-lime-800",
-  Encouragement: "bg-rose-100 text-rose-800",
-  Patience: "bg-cyan-100 text-cyan-800",
-  Character: "bg-fuchsia-100 text-fuchsia-800",
+const categoryButtonColors = {
+  Faith: "bg-blue-500 text-white",
+  Motivation: "bg-green-500 text-white",
+  Wisdom: "bg-yellow-500 text-black",
+  Patience: "bg-purple-500 text-white",
+  Guidance: "bg-indigo-500 text-white",
+  Encouragement: "bg-pink-500 text-white",
+  Trust: "bg-teal-500 text-white",
+  "Self-Discipline": "bg-orange-500 text-white",
+  Contentment: "bg-red-500 text-white",
+  Success: "bg-cyan-500 text-black",
+  Happiness: "bg-lime-500 text-black",
 };
 
 export default function QuoteCard({ quote }) {
   return (
-    <div className="flex flex-col justify-between p-6 bg-white rounded-xl shadow-lg hover:shadow-2xl border border-gray-100 transform transition-all duration-300 hover:scale-[1.03] h-68 md:h-52 cursor-pointer">
-      
-      <div className="flex flex-wrap gap-2 mb-2">
-        {quote.categories.map((cat) => (
+    <div className="bg-white rounded-lg shadow-md flex items-stretch overflow-hidden hover:shadow-lg transition w-full min-h-[180px] sm:min-h-[220px]">
+      {/* Left: Image */}
+      <div className="relative w-28 sm:w-32 h-auto flex-shrink-0">
+        <Image
+          src={quote.imageUrl || "/images/default-quote.jpg"}
+          alt={quote.author || "Quote Image"}
+          fill
+          className="object-cover"
+        />
+
+        {/* Category on Image (optional) */}
+        {quote.categories?.[0] && (
           <span
-            key={cat}
-            className={`px-3 py-1 text-xs font-semibold rounded-full ${
-              categoryColors[cat] || "bg-gray-100 text-gray-800"
+            className={`absolute bottom-2 left-2 text-xs px-2 py-0.5 rounded-full ${
+              categoryButtonColors[quote.categories[0]] || "bg-gray-600 text-white"
             }`}
           >
-            {cat}
+            {quote.categories[0]}
           </span>
-        ))}
+        )}
       </div>
 
-      <div className="flex items-center space-x-6 flex-1">
-        <div className="flex-shrink-0">
-          <Image
-            src={quote.imageUrl}
-            alt={quote.author}
-            width={80}   
-            height={80}  
-            className="rounded-lg object-cover shadow-sm transition-transform duration-300 hover:rotate-1"
-          />
-        </div>
+      {/* Right: Content */}
+      <div className="flex flex-col justify-between p-4 flex-1">
+        {/* Quote Text */}
+        <blockquote className="text-gray-800 italic text-sm sm:text-base leading-snug">
+          "{quote.text}"
+        </blockquote>
 
-        <div className="flex flex-col justify-between flex-1">
-          <blockquote className="text-gray-800 italic leading-snug text-sm">
-            "{quote.text}"
-          </blockquote>
-          <p className="mt-2 text-sm font-semibold text-gray-600">
-            - {quote.author}
+        {/* Author + Categories */}
+        <div className="mt-3">
+          <p className="text-gray-600 font-medium text-sm sm:text-base">
+            - {quote.author || "Unknown"}
           </p>
+
+          {quote.categories && quote.categories.length > 1 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {quote.categories.slice(1).map((cat, idx) => (
+                <span
+                  key={idx}
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                    categoryButtonColors[cat] || "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
-

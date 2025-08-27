@@ -1,23 +1,25 @@
-import React from 'react';
-import Navbar from './Navbar';
+import Image from "next/image";
 
 export default function HeroQuote({ quote }) {
   return (
-    <div className="relative h-[60vh] md:h-screen bg-cover bg-fixed bg-center" style={{ backgroundImage: "url('/images/hero-bg.jpg')" }}>
-      <div className="absolute inset-0 bg-black opacity-40"></div>
-      <Navbar />
-      <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center p-4">
-        <h1 className="text-4xl md:text-6xl font-black mb-4">
-          <span>
-            Stay Motivated
-          </span>
-        </h1>
-        <blockquote className="max-w-3xl text-lg md:text-2xl font-semibold leading-relaxed italic mb-6">
-          “{quote.text}”
-        </blockquote>
-        <cite className="text-base md:text-lg font-medium">- {quote.author}</cite>
+    <div className="relative w-full h-[400px] sm:h-[500px] md:h-[600px]">
+      <Image
+        src="/images/hero-bg.jpg"
+        alt="Hero Background"
+        fill
+        priority
+        className="object-cover"
+      />
+      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+        <div className="text-center text-white p-4 sm:p-6">
+          <blockquote className="text-2xl sm:text-3xl md:text-4xl font-bold italic">
+            "{quote.text}"
+          </blockquote>
+          <p className="mt-4 text-lg sm:text-xl font-medium">
+            - {quote.author}
+          </p>
+        </div>
       </div>
     </div>
   );
 }
-

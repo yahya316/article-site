@@ -1,55 +1,142 @@
-import fs from "fs";
-import path from "path";
+import connectDB from '../../../lib/mongoose';
+import User from '../../../models/User';
+import bcrypt from 'bcrypt';
 
-const filePath = path.join(process.cwd(), "data", "users.json");
-
-export async function GET() {
+export async function GET(req) {
   try {
-    const data = fs.readFileSync(filePath, "utf-8");
-    const users = JSON.parse(data);
-    return new Response(JSON.stringify(users), { status: 200 });
+    await connectDB();
+    const { searchParams } = new URL(req.url);
+    const email = searchParams.get("email");
+
+    if (!email) {
+      return new Response(JSON.stringify({ error: "Email is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() }).lean();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "User not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Exclude password from response
+    const { password, ...userWithoutPassword } = user;
+    return new Response(JSON.stringify(userWithoutPassword), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
-    console.error(err);
-    return new Response("Error reading users", { status: 500 });
+    console.error("Error fetching user:", err);
+    return new Response(JSON.stringify({ error: "Failed to fetch user" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
 export async function PATCH(req) {
   try {
-    const { email, updates } = await req.json();
-    const data = fs.readFileSync(filePath, "utf-8");
-    const users = JSON.parse(data);
+    await connectDB();
+    const body = await req.json();
+    const { email, currentPassword, newPassword, updates } = body;
 
-    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-    if (userIndex === -1) return new Response("User not found", { status: 404 });
+    if (!email) {
+      return new Response(JSON.stringify({ error: "Email is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    users[userIndex] = { ...users[userIndex], ...updates };
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return new Response(JSON.stringify({ error: "User not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    fs.writeFileSync(filePath, JSON.stringify(users, null, 2));
+    // Handle password update
+    if (currentPassword && newPassword) {
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return new Response(JSON.stringify({ error: "Current password is incorrect" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
 
-    return new Response(JSON.stringify(users[userIndex]), { status: 200 });
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      await User.findOneAndUpdate(
+        { email: email.toLowerCase() },
+        { $set: { password: hashedPassword } },
+        { runValidators: true }
+      );
+    } else if (updates && typeof updates.notifications === "boolean") {
+      // Handle notifications update
+      await User.findOneAndUpdate(
+        { email: email.toLowerCase() },
+        { $set: { notifications: updates.notifications } },
+        { runValidators: true }
+      );
+    } else {
+      return new Response(JSON.stringify({ error: "Invalid update request" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Fetch updated user
+    const updatedUser = await User.findOne({ email: email.toLowerCase() }).lean();
+    const { password, ...userWithoutPassword } = updatedUser;
+
+    return new Response(JSON.stringify(userWithoutPassword), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
-    console.error(err);
-    return new Response("Error updating user", { status: 500 });
+    console.error("Error updating user:", err);
+    return new Response(JSON.stringify({ error: err.message || "Failed to update user" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
 export async function DELETE(req) {
   try {
+    await connectDB();
     const { email } = await req.json();
-    const data = fs.readFileSync(filePath, "utf-8");
-    let users = JSON.parse(data);
 
-    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-    if (userIndex === -1) return new Response("User not found", { status: 404 });
+    if (!email) {
+      return new Response(JSON.stringify({ error: "Email is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    users.splice(userIndex, 1);
+    const result = await User.deleteOne({ email: email.toLowerCase() });
+    if (result.deletedCount === 0) {
+      return new Response(JSON.stringify({ error: "User not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    fs.writeFileSync(filePath, JSON.stringify(users, null, 2));
-
-    return new Response("User deleted successfully", { status: 200 });
+    return new Response(JSON.stringify({ message: "User deleted successfully" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
-    console.error(err);
-    return new Response("Error deleting user", { status: 500 });
+    console.error("Error deleting user:", err);
+    return new Response(JSON.stringify({ error: err.message || "Failed to delete user" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

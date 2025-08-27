@@ -1,57 +1,49 @@
-import { promises as fs } from "fs";
-import path from "path";
-
-const pendingQuotesPath = path.join(process.cwd(), "data", "pendingQuotes.json");
-const quotesPath = path.join(process.cwd(), "data", "quotes.json");
+import connectDB from '../../../lib/mongoose';
+import MiniQuote from '../../../models/MiniQuote';
+import PendingQuote from '../../../models/PendingQuote';
 
 export async function POST(req) {
   try {
+    await connectDB();
     const { id, action } = await req.json();
 
-    // Load files
-    const pendingData = JSON.parse(await fs.readFile(pendingQuotesPath, "utf-8"));
-    const quotesData = JSON.parse(await fs.readFile(quotesPath, "utf-8"));
-
-    const quoteIndex = pendingData.findIndex((q) => q.id == id);
-    if (quoteIndex === -1) {
-      return new Response(JSON.stringify({ error: "Quote not found" }), { status: 404 });
+    if (!id || !["approve", "reject"].includes(action)) {
+      return new Response(JSON.stringify({ error: 'Invalid request' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    const quote = pendingData[quoteIndex];
+    const pendingQuote = await PendingQuote.findOne({ id }).lean();
+    if (!pendingQuote) {
+      return new Response(JSON.stringify({ error: 'Pending quote not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     if (action === "approve") {
-      // Remove from pending
-      pendingData.splice(quoteIndex, 1);
-
-      // Ensure miniQuotes exists
-      if (!quotesData.miniQuotes) quotesData.miniQuotes = [];
-
-      // Add to miniQuotes
-      quotesData.miniQuotes.push({
-        id: quote.id,
-        text: quote.text,
-        author: quote.author,
-        categories: quote.categories,
-      });
-
-      // Save both files
-      await fs.writeFile(pendingQuotesPath, JSON.stringify(pendingData, null, 2));
-      await fs.writeFile(quotesPath, JSON.stringify(quotesData, null, 2));
-
-      return new Response(JSON.stringify({ message: "Quote approved" }), { status: 200 });
+      const newQuote = {
+        id: pendingQuote.id,
+        text: pendingQuote.text,
+        author: pendingQuote.author,
+        imageUrl: pendingQuote.imageUrl || null,
+        categories: Array.isArray(pendingQuote.categories) ? pendingQuote.categories : [],
+      };
+      await MiniQuote.create(newQuote);
     }
 
-    if (action === "reject") {
-      // Just remove from pending
-      pendingData.splice(quoteIndex, 1);
-      await fs.writeFile(pendingQuotesPath, JSON.stringify(pendingData, null, 2));
+    await PendingQuote.findOneAndDelete({ id });
 
-      return new Response(JSON.stringify({ message: "Quote rejected" }), { status: 200 });
-    }
-
-    return new Response(JSON.stringify({ error: "Invalid action" }), { status: 400 });
-  } catch (err) {
-    console.error("Error in /api/manage-quote:", err);
-    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error managing quote:', error);
+    return new Response(JSON.stringify({ error: 'Failed to manage quote' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

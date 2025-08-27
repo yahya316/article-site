@@ -1,10 +1,16 @@
-import fs from "fs";
-import path from "path";
+import connectDB from '../../../lib/mongoose';
+import Analytics from '../../../models/Analytics';
 
 export async function GET() {
-  const filePath = path.join(process.cwd(), "data", "analytics.json");
-  const jsonData = fs.readFileSync(filePath, "utf-8");
-  const data = JSON.parse(jsonData);
-
-  return Response.json(data);
+  try {
+    await connectDB();
+    const data = await Analytics.find({}).lean();
+    return Response.json(data);
+  } catch (error) {
+    console.error('Error fetching analytics data:', error);
+    return new Response(JSON.stringify({ error: 'Failed to fetch analytics data' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }

@@ -116,16 +116,6 @@ export default function Footer() {
                 </div>
 
                 <div className="flex flex-col items-end gap-4 mt-4 md:mt-0 md:w-1/4 md:justify-end">
-                    <Link href="/dashboard">
-                        <button className="hover:text-indigo-400 transition-colors font-medium">
-                            Go to Admin DashBoard
-                        </button>
-                    </Link>
-                    <Link href="/auth">
-                        <button className="hover:text-indigo-400 transition-colors font-medium">
-                            Go to Admin Auth
-                        </button>
-                    </Link>
                     <div className="flex gap-4">
                         {socialLinks.map((link, i) => (
                             <Link

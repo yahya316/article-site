@@ -1,35 +1,92 @@
-import fs from "fs";
-import path from "path";
-
-const filePath = path.join(process.cwd(), "data/articles.json");
+import connectDB from '../../../lib/mongoose';
+import Article from '../../../models/Article';
 
 export async function GET() {
-  const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-  return new Response(JSON.stringify(data), { status: 200 });
+  try {
+    await connectDB();
+    const articles = await Article.find({}).lean();
+    return new Response(JSON.stringify(articles), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error fetching articles:', error);
+    return new Response(JSON.stringify({ error: 'Failed to fetch articles' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }
 
 export async function POST(req) {
-  const newArticle = await req.json();
-  const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-  newArticle.id = Date.now();
-  data.push(newArticle);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-  return new Response(JSON.stringify(newArticle), { status: 201 });
+  try {
+    await connectDB();
+    const newArticle = await req.json();
+    // Generate custom ID
+    const maxIdArticle = await Article.findOne().sort({ id: -1 }).lean();
+    newArticle.id = maxIdArticle ? maxIdArticle.id + 1 : 1;
+    const article = await Article.create(newArticle);
+    return new Response(JSON.stringify(article), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error creating article:', error);
+    return new Response(JSON.stringify({ error: 'Failed to create article' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }
 
 export async function PUT(req) {
-  const updated = await req.json();
-  const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-  const idx = data.findIndex((a) => a.id === updated.id);
-  if (idx !== -1) data[idx] = updated;
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-  return new Response(JSON.stringify(updated), { status: 200 });
+  try {
+    await connectDB();
+    const updatedArticle = await req.json();
+    const article = await Article.findOneAndUpdate(
+      { id: updatedArticle.id },
+      updatedArticle,
+      { new: true, runValidators: true }
+    ).lean();
+    if (!article) {
+      return new Response(JSON.stringify({ error: 'Article not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return new Response(JSON.stringify(article), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error updating article:', error);
+    return new Response(JSON.stringify({ error: 'Failed to update article' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }
 
 export async function DELETE(req) {
-  const { id } = await req.json();
-  let data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-  data = data.filter((a) => a.id !== id);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-  return new Response(JSON.stringify({ id }), { status: 200 });
+  try {
+    await connectDB();
+    const { id } = await req.json();
+    const article = await Article.findOneAndDelete({ id }).lean();
+    if (!article) {
+      return new Response(JSON.stringify({ error: 'Article not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return new Response(JSON.stringify({ id }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error deleting article:', error);
+    return new Response(JSON.stringify({ error: 'Failed to delete article' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }

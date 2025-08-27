@@ -18,6 +18,7 @@ export default function SettingsPage() {
   // Search user by email
   const handleSearch = async () => {
     setMessage("");
+    setMessageType("");
     setUser(null);
     setForm({
       currentPassword: "",
@@ -33,21 +34,19 @@ export default function SettingsPage() {
     }
 
     try {
-      const res = await fetch("/api/settings");
-      if (!res.ok) throw new Error("Failed to fetch users");
-      const users = await res.json();
-      const foundUser = users.find(u => u.email.toLowerCase() === searchEmail.toLowerCase());
+      const res = await fetch(`/api/settings?email=${encodeURIComponent(searchEmail)}`);
+      const data = await res.json();
 
-      if (!foundUser) {
-        setMessage("User not found.");
+      if (!res.ok) {
+        setMessage(data.error || "User not found.");
         setMessageType("error");
         return;
       }
 
-      setUser(foundUser);
-      setForm(prev => ({ ...prev, notifications: foundUser.notifications || false }));
+      setUser(data);
+      setForm((prev) => ({ ...prev, notifications: data.notifications || false }));
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching user:", err);
       setMessage("Error fetching user.");
       setMessageType("error");
     }
@@ -55,18 +54,13 @@ export default function SettingsPage() {
 
   const handleChange = (e) => {
     const { name, type, checked, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
   // Password change
   const handlePasswordChange = async () => {
     if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
       setMessage("Please fill in all password fields.");
-      setMessageType("error");
-      return;
-    }
-    if (form.currentPassword !== user.password) {
-      setMessage("Current password is incorrect.");
       setMessageType("error");
       return;
     }
@@ -82,18 +76,28 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: user.email,
-          updates: { password: form.newPassword },
+          currentPassword: form.currentPassword,
+          newPassword: form.newPassword,
         }),
       });
-      if (!res.ok) throw new Error("Failed to update password");
 
-      setUser(prev => ({ ...prev, password: form.newPassword }));
-      setForm(prev => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to update password");
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      }));
       setMessage("Password updated successfully.");
       setMessageType("success");
+      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      console.error(err);
-      setMessage("Error updating password.");
+      console.error("Error updating password:", err);
+      setMessage(err.message || "Error updating password.");
       setMessageType("error");
     }
   };
@@ -109,14 +113,19 @@ export default function SettingsPage() {
           updates: { notifications: form.notifications },
         }),
       });
-      if (!res.ok) throw new Error("Failed to update notifications");
 
-      setUser(prev => ({ ...prev, notifications: form.notifications }));
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to update notifications");
+      }
+
+      setUser((prev) => ({ ...prev, notifications: form.notifications }));
       setMessage("Notification settings updated.");
       setMessageType("success");
+      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      console.error(err);
-      setMessage("Error updating notifications.");
+      console.error("Error updating notifications:", err);
+      setMessage(err.message || "Error updating notifications.");
       setMessageType("error");
     }
   };
@@ -131,16 +140,21 @@ export default function SettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: user.email }),
       });
-      if (!res.ok) throw new Error("Failed to delete account");
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to delete account");
+      }
 
       setUser(null);
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "", notifications: false });
       setSearchEmail("");
       setMessage("Account deleted successfully.");
       setMessageType("success");
+      setTimeout(() => setMessage(""), 3000);
     } catch (err) {
-      console.error(err);
-      setMessage("Error deleting account.");
+      console.error("Error deleting account:", err);
+      setMessage(err.message || "Error deleting account.");
       setMessageType("error");
     }
   };
@@ -151,28 +165,34 @@ export default function SettingsPage() {
       <div className="bg-white p-6 rounded-2xl shadow-md mb-6 flex flex-col md:flex-row gap-4 items-center">
         <input
           type="email"
-          placeholder="Enter user email to do settings"
+          placeholder="Enter user email to manage settings"
           value={searchEmail}
           onChange={(e) => setSearchEmail(e.target.value)}
-          className="w-full md:flex-1 border rounded-lg px-4 py-2"
+          className="w-full md:flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           onClick={handleSearch}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           Search
         </button>
       </div>
 
       {message && (
-        <p className={`text-center mb-4 ${messageType === "error" ? "text-red-600" : "text-green-600"}`}>
+        <p
+          className={`text-center mb-4 ${
+            messageType === "error" ? "text-red-600" : "text-green-600"
+          }`}
+        >
           {message}
         </p>
       )}
 
       {user && (
         <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-4">{user.name} ({user.email})</h2>
+          <h2 className="text-2xl font-bold mb-4">
+            {user.name} ({user.email})
+          </h2>
 
           {/* Password Change */}
           <div className="mb-6">
@@ -184,7 +204,7 @@ export default function SettingsPage() {
                 placeholder="Current Password"
                 value={form.currentPassword}
                 onChange={handleChange}
-                className="border rounded-lg p-2"
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <input
                 type="password"
@@ -192,7 +212,7 @@ export default function SettingsPage() {
                 placeholder="New Password"
                 value={form.newPassword}
                 onChange={handleChange}
-                className="border rounded-lg p-2"
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <input
                 type="password"
@@ -200,11 +220,11 @@ export default function SettingsPage() {
                 placeholder="Confirm New Password"
                 value={form.confirmPassword}
                 onChange={handleChange}
-                className="border rounded-lg p-2"
+                className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
                 onClick={handlePasswordChange}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600"
+                className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600 transition focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <FaLock /> Update Password
               </button>
@@ -220,7 +240,8 @@ export default function SettingsPage() {
                 name="notifications"
                 checked={form.notifications}
                 onChange={handleChange}
-                onBlur={handleNotificationToggle} // save when toggle changes
+                onBlur={handleNotificationToggle}
+                className="focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               Notifications
             </label>
@@ -230,7 +251,7 @@ export default function SettingsPage() {
           <div className="flex justify-end">
             <button
               onClick={handleDeleteAccount}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600"
+              className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <FaTrash /> Delete Account
             </button>

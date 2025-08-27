@@ -1,14 +1,13 @@
 {
-  "categoryButtonColors": {
-    "Motivation": "bg-blue-500 text-white",
-    "Happiness": "bg-yellow-400 text-black",
-    "Success": "bg-green-500 text-white",
-    "Mindfulness": "bg-pink-400 text-white",
-    "Faith": "bg-indigo-500 text-white",
-    "Self-Discipline": "bg-red-500 text-white",
-    "Guidance": "bg-purple-500 text-white",
-    "Trust": "bg-teal-500 text-white",
-    "Wisdom": "bg-orange-500 text-white",
-    "Contentment": "bg-lime-500 text-white"
-  }
+  "Faith": "bg-blue-500",
+  "Motivation": "bg-green-500",
+  "Wisdom": "bg-yellow-500",
+  "Patience": "bg-purple-500",
+  "Guidance": "bg-indigo-500",
+  "Encouragement": "bg-pink-500",
+  "Trust": "bg-teal-500",
+  "Self-Discipline": "bg-orange-500",
+  "Contentment": "bg-red-500",
+  "Success": "bg-cyan-500",
+  "Happiness": "bg-lime-500"
 }

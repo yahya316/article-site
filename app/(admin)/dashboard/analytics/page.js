@@ -9,9 +9,18 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/analytics");
-      const json = await res.json();
-      setData(json);
+      try {
+        const res = await fetch("/api/analytics");
+        if (!res.ok) {
+          throw new Error("Failed to fetch analytics data");
+        }
+        const json = await res.json();
+        // Assuming the API returns an array with a single document
+        const analyticsData = Array.isArray(json) && json.length > 0 ? json[0] : null;
+        setData(analyticsData);
+      } catch (error) {
+        console.error("Error fetching analytics data:", error);
+      }
     };
     fetchData();
   }, []);
@@ -21,7 +30,6 @@ export default function AnalyticsPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Analytics</h1>
-
       <div className="bg-white shadow rounded-lg p-4 mb-6">
         <h2 className="text-lg font-semibold mb-4">Daily Visitors</h2>
         <ResponsiveContainer width="100%" height={300}>

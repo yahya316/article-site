@@ -1,38 +1,80 @@
-import { promises as fs } from "fs";
-import path from "path";
+import connectDB from '../../../lib/mongoose';
+   import PendingQuote from '../../../models/PendingQuote';
 
-export async function POST(req) {
-  try {
-    const body = await req.json();
+   const validCategories = [
+     "Faith",
+     "Motivation",
+     "Wisdom",
+     "Patience",
+     "Guidance",
+     "Encouragement",
+     "Trust",
+     "Self-Discipline",
+     "Contentment",
+     "Success",
+     "Happiness",
+   ];
 
-    const filePath = path.join(process.cwd(), "data", "pendingQuotes.json");
-    let existing = [];
+   export async function POST(req) {
+     try {
+       await connectDB();
+       const body = await req.json();
 
-    try {
-      const file = await fs.readFile(filePath, "utf-8");
-      existing = JSON.parse(file);
-    } catch {
-      existing = [];
-    }
+       if (!body.text || !body.author || !body.type || !['mini', 'hero'].includes(body.type)) {
+         return new Response(JSON.stringify({ success: false, error: 'Missing or invalid required fields' }), {
+           status: 400,
+           headers: { 'Content-Type': 'application/json' },
+         });
+       }
 
-    const newQuote = {
-      id: Date.now(),
-      text: body.text,
-      author: body.author,
-      categories: body.categories,
-      status: "pending",
-    };
+       if (body.type === 'mini') {
+         if (!body.imageUrl || typeof body.imageUrl !== 'string' || body.imageUrl.trim() === '') {
+           return new Response(JSON.stringify({ success: false, error: 'A valid image URL is required for mini quotes' }), {
+             status: 400,
+             headers: { 'Content-Type': 'application/json' },
+           });
+         }
+         if (!Array.isArray(body.categories) || body.categories.length === 0) {
+           return new Response(JSON.stringify({ success: false, error: 'At least one category is required for mini quotes' }), {
+             status: 400,
+             headers: { 'Content-Type': 'application/json' },
+           });
+         }
+       }
 
-    existing.push(newQuote);
+       // Validate categories
+       const filteredCategories = body.type === 'mini' ? body.categories.filter(cat => validCategories.includes(cat)) : [];
+       if (body.type === 'mini' && filteredCategories.length === 0) {
+         return new Response(JSON.stringify({ success: false, error: 'No valid categories provided' }), {
+           status: 400,
+           headers: { 'Content-Type': 'application/json' },
+         });
+       }
 
-    await fs.writeFile(filePath, JSON.stringify(existing, null, 2));
+       const maxIdQuote = await PendingQuote.findOne().sort({ id: -1 }).lean();
+       const newId = maxIdQuote ? maxIdQuote.id + 1 : 1;
 
-    return new Response(JSON.stringify({ success: true, quote: newQuote }), {
-      status: 200,
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: err.message }), {
-      status: 500,
-    });
-  }
-}
+       const newQuote = {
+         id: newId,
+         text: body.text,
+         author: body.author,
+         imageUrl: body.type === 'mini' ? body.imageUrl : null,
+         categories: filteredCategories,
+         type: body.type,
+         status: 'pending',
+       };
+
+       const createdQuote = await PendingQuote.create(newQuote);
+
+       return new Response(JSON.stringify({ success: true, quote: createdQuote }), {
+         status: 200,
+         headers: { 'Content-Type': 'application/json' },
+       });
+     } catch (err) {
+       console.error('Error submitting quote:', err);
+       return new Response(JSON.stringify({ success: false, error: err.message }), {
+         status: 500,
+         headers: { 'Content-Type': 'application/json' },
+       });
+     }
+   }
