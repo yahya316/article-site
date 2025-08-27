@@ -1,9 +1,28 @@
 import connectDB from '../../../lib/mongoose';
 import Article from '../../../models/Article';
 
-export async function GET() {
+export async function GET(req) {
   try {
     await connectDB();
+    const { searchParams } = new URL(req.url);
+    const slug = searchParams.get('slug');
+
+    if (slug) {
+      // Fetch single article by slug
+      const article = await Article.findOne({ slug }).lean();
+      if (!article) {
+        return new Response(JSON.stringify({ error: 'Article not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify(article), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Fetch all articles
     const articles = await Article.find({}).lean();
     return new Response(JSON.stringify(articles), {
       status: 200,
